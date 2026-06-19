@@ -13,7 +13,7 @@ import com.zhiwu.app.data.entity.Tag
  * 标签选择器
  * 支持多选标签
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TagSelector(
     tags: List<Tag>,
