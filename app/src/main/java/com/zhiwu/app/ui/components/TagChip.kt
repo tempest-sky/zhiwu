@@ -1,7 +1,7 @@
 package com.zhiwu.app.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
+import androidx.compose.material3.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,7 +42,7 @@ fun TagChip(
             isDark -> TagColorDark
             else -> TagColorLight
         },
-        animationSpec = AnimationTokens.SPRING_EFFECTS,
+        animationSpec = tween(durationMillis = AnimationTokens.DURATION_MEDIUM1),
         label = "tagBg"
     )
     
@@ -51,7 +52,7 @@ fun TagChip(
             isDark -> MaterialTheme.colorScheme.onSurface
             else -> MaterialTheme.colorScheme.primary
         },
-        animationSpec = AnimationTokens.SPRING_EFFECTS,
+        animationSpec = tween(durationMillis = AnimationTokens.DURATION_MEDIUM1),
         label = "tagText"
     )
     
@@ -113,7 +114,7 @@ fun CategoryChip(
         } else {
             if (isDark) TagColorDark else TagColorLight
         },
-        animationSpec = AnimationTokens.SPRING_EFFECTS,
+        animationSpec = tween(durationMillis = AnimationTokens.DURATION_MEDIUM1),
         label = "categoryBg"
     )
     
@@ -123,7 +124,7 @@ fun CategoryChip(
         } else {
             MaterialTheme.colorScheme.onSurface
         },
-        animationSpec = AnimationTokens.SPRING_EFFECTS,
+        animationSpec = tween(durationMillis = AnimationTokens.DURATION_MEDIUM1),
         label = "categoryText"
     )
     

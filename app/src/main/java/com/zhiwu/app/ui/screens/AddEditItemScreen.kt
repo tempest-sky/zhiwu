@@ -27,6 +27,7 @@ import com.zhiwu.app.data.entity.Tag
 import com.zhiwu.app.ui.components.GlassCard
 import com.zhiwu.app.ui.components.TagSelector
 import com.zhiwu.app.viewmodel.ItemViewModel
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,6 +44,7 @@ fun AddEditItemScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val categories by viewModel.categories.collectAsState()
     val tags by viewModel.tags.collectAsState()
     
@@ -74,7 +76,9 @@ fun AddEditItemScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && photoUri != null) {
-            imagePath = viewModel.saveImageToInternal(context, photoUri!!)
+            scope.launch {
+                imagePath = viewModel.saveImageToInternal(context, photoUri!!)
+            }
         }
     }
     
@@ -82,7 +86,9 @@ fun AddEditItemScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            imagePath = viewModel.saveImageToInternal(context, it)
+            scope.launch {
+                imagePath = viewModel.saveImageToInternal(context, it)
+            }
         }
     }
     

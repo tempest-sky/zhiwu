@@ -248,7 +248,7 @@ fun ItemImage(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                     modifier = Modifier
-                        .padding(size / 4)
+                        .padding((size / 4).dp)
                 )
             }
         }
