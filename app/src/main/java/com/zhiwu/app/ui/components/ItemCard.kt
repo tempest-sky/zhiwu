@@ -127,11 +127,9 @@ fun ItemListCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Text(
+                            text = "📅",
+                            style = MaterialTheme.typography.bodySmall
                         )
                         Text(
                             text = "${holdingDays}天",
@@ -140,17 +138,15 @@ fun ItemListCard(
                         )
                     }
                     
-                        // 日均成本
+                    // 日均成本
                     if (holdingDays > 0) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.AttachMoney,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                            Text(
+                                text = "💰",
+                                style = MaterialTheme.typography.bodySmall
                             )
                             Text(
                                 text = "¥${String.format("%.2f", dailyPrice)}/天",
