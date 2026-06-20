@@ -414,22 +414,6 @@ private fun ItemListView(
         }
     }
 }
-                                showDeleteDialog = false
-                            }
-                        ) {
-                            Text("删除", color = MaterialTheme.colorScheme.error)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDeleteDialog = false }) {
-                            Text("取消")
-                        }
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun ItemGridView(
