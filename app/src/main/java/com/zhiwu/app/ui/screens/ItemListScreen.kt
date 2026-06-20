@@ -231,6 +231,7 @@ fun ItemListScreen(
 /**
  * 状态筛选芯片
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusFilterChips(
     selectedStatus: String?,

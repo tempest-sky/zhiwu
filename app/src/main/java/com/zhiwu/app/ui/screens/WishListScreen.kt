@@ -257,6 +257,7 @@ fun PriorityIndicator(priority: Int) {
 /**
  * 添加心愿对话框
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddWishItemDialog(
     onDismiss: () -> Unit,
