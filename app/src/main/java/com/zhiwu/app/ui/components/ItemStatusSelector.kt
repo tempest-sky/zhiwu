@@ -13,6 +13,7 @@ import com.zhiwu.app.data.entity.ItemStatus
 /**
  * 物品状态选择器
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemStatusSelector(
     selectedStatus: ItemStatus,
@@ -107,6 +108,7 @@ val ItemStatus.icon: ImageVector
 /**
  * 保修期/保质期设置组件
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpiryDatePicker(
     label: String,
