@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.zhiwu.app.data.entity.ItemStatus
 import com.zhiwu.app.data.entity.ItemWithDetails
 import com.zhiwu.app.ui.animation.AnimationTokens
 import com.zhiwu.app.ui.components.*
@@ -33,14 +34,19 @@ fun ItemListScreen(
     onNavigateToEditItem: (Long) -> Unit,
     onNavigateToStatistics: () -> Unit,
     onNavigateToManageCategories: () -> Unit,
-    onNavigateToManageTags: () -> Unit
+    onNavigateToManageTags: () -> Unit,
+    onNavigateToWishList: () -> Unit
 ) {
     val items by viewModel.items.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val tags by viewModel.tags.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
+    val selectedStatus by viewModel.selectedStatus.collectAsState()
     val isGridView by viewModel.isGridView.collectAsState()
+    val wishItemCount by viewModel.wishItemCount.collectAsState()
+    val warrantyExpiringItems by viewModel.warrantyExpiringItems.collectAsState()
+    val shelfLifeExpiringItems by viewModel.shelfLifeExpiringItems.collectAsState()
     
     var showMenu by remember { mutableStateOf(false) }
     
@@ -57,6 +63,24 @@ fun ItemListScreen(
                     )
                 },
                 actions = {
+                    // 心愿清单按钮
+                    BadgedBox(
+                        badge = {
+                            if (wishItemCount > 0) {
+                                Badge {
+                                    Text("$wishItemCount")
+                                }
+                            }
+                        }
+                    ) {
+                        IconButton(onClick = onNavigateToWishList) {
+                            Icon(
+                                imageVector = Icons.Default.FavoriteBorder,
+                                contentDescription = "心愿清单"
+                            )
+                        }
+                    }
+                    
                     // 视图切换按钮
                     IconButton(onClick = { viewModel.toggleViewMode() }) {
                         AnimatedContent(
@@ -152,6 +176,13 @@ fun ItemListScreen(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
             
+            // 状态筛选
+            StatusFilterChips(
+                selectedStatus = selectedStatus,
+                onStatusSelected = { viewModel.setSelectedStatus(it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+            
             Spacer(modifier = Modifier.height(8.dp))
             
             // 内容区域
@@ -184,6 +215,8 @@ fun ItemListScreen(
                         } else {
                             ItemListView(
                                 items = items,
+                                warrantyExpiringItems = warrantyExpiringItems,
+                                shelfLifeExpiringItems = shelfLifeExpiringItems,
                                 onItemClick = { onNavigateToEditItem(it.item.id) },
                                 onDeleteItem = { viewModel.deleteItem(it) }
                             )
@@ -195,10 +228,47 @@ fun ItemListScreen(
     }
 }
 
+/**
+ * 状态筛选芯片
+ */
+@Composable
+fun StatusFilterChips(
+    selectedStatus: String?,
+    onStatusSelected: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = selectedStatus == null,
+            onClick = { onStatusSelected(null) },
+            label = { Text("全部") }
+        )
+        ItemStatus.values().forEach { status ->
+            FilterChip(
+                selected = selectedStatus == status.name,
+                onClick = { onStatusSelected(status.name) },
+                label = { Text(status.displayName) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = status.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ItemListView(
     items: List<ItemWithDetails>,
+    warrantyExpiringItems: List<ItemWithDetails>,
+    shelfLifeExpiringItems: List<ItemWithDetails>,
     onItemClick: (ItemWithDetails) -> Unit,
     onDeleteItem: (com.zhiwu.app.data.entity.Item) -> Unit
 ) {
@@ -206,6 +276,26 @@ private fun ItemListView(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // 到期提醒
+        if (warrantyExpiringItems.isNotEmpty() || shelfLifeExpiringItems.isNotEmpty()) {
+            item(key = "expiry_alerts") {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (warrantyExpiringItems.isNotEmpty()) {
+                        ExpiryAlertCard(
+                            title = "保修期即将到期",
+                            items = warrantyExpiringItems.map { it.item.name }
+                        )
+                    }
+                    if (shelfLifeExpiringItems.isNotEmpty()) {
+                        ExpiryAlertCard(
+                            title = "保质期即将到期",
+                            items = shelfLifeExpiringItems.map { it.item.name }
+                        )
+                    }
+                }
+            }
+        }
+        
         items(
             items = items,
             key = { it.item.id }

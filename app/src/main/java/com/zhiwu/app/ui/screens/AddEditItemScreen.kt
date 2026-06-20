@@ -20,13 +20,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
-import com.zhiwu.app.data.entity.Category
-import com.zhiwu.app.data.entity.Item
-import com.zhiwu.app.data.entity.ItemWithDetails
-import com.zhiwu.app.data.entity.Tag
-import com.zhiwu.app.ui.components.GlassButton
-import com.zhiwu.app.ui.components.GlassCard
-import com.zhiwu.app.ui.components.TagSelector
+import com.zhiwu.app.data.entity.*
+import com.zhiwu.app.ui.components.*
 import com.zhiwu.app.viewmodel.ItemViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -58,6 +53,11 @@ fun AddEditItemScreen(
     var imagePath by remember { mutableStateOf<String?>(null) }
     var notes by remember { mutableStateOf("") }
     var existingItem by remember { mutableStateOf<Item?>(null) }
+    var itemStatus by remember { mutableStateOf(ItemStatus.IN_USE) }
+    var warrantyExpiry by remember { mutableStateOf<Long?>(null) }
+    var shelfLifeExpiry by remember { mutableStateOf<Long?>(null) }
+    var purchaseChannel by remember { mutableStateOf("") }
+    var relatedLink by remember { mutableStateOf("") }
     
     // 表单验证
     var nameError by remember { mutableStateOf(false) }
@@ -83,7 +83,7 @@ fun AddEditItemScreen(
         }
     }
     
-    // 选择图片（带裁剪）
+    // 选择图片
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -107,6 +107,11 @@ fun AddEditItemScreen(
                     selectedTagIds = it.tags.map { tag -> tag.id }.toSet()
                     imagePath = it.item.imagePath
                     notes = it.item.notes ?: ""
+                    itemStatus = ItemStatus.valueOf(it.item.status)
+                    warrantyExpiry = it.item.warrantyExpiry
+                    shelfLifeExpiry = it.item.shelfLifeExpiry
+                    purchaseChannel = it.item.purchaseChannel ?: ""
+                    relatedLink = it.item.relatedLink ?: ""
                 }
             }
         }
@@ -275,6 +280,12 @@ fun AddEditItemScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                     
+                    // 物品状态
+                    ItemStatusSelector(
+                        selectedStatus = itemStatus,
+                        onStatusSelected = { itemStatus = it }
+                    )
+                    
                     // 分类选择
                     Text(
                         text = "分类 *",
@@ -326,9 +337,58 @@ fun AddEditItemScreen(
                 }
             }
             
-            // 备注
+            // 保修期和保质期
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "有效期",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    
+                    ExpiryDatePicker(
+                        label = "保修期",
+                        expiryDate = warrantyExpiry,
+                        onDateSelected = { warrantyExpiry = it }
+                    )
+                    
+                    ExpiryDatePicker(
+                        label = "保质期",
+                        expiryDate = shelfLifeExpiry,
+                        onDateSelected = { shelfLifeExpiry = it }
+                    )
+                }
+            }
+            
+            // 其他信息
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "其他信息",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    
+                    OutlinedTextField(
+                        value = purchaseChannel,
+                        onValueChange = { purchaseChannel = it },
+                        label = { Text("入手渠道") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    OutlinedTextField(
+                        value = relatedLink,
+                        onValueChange = { relatedLink = it },
+                        label = { Text("相关链接") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
                     OutlinedTextField(
                         value = notes,
                         onValueChange = { notes = it },
@@ -357,7 +417,11 @@ fun AddEditItemScreen(
                             tagIds = selectedTagIds.toList(),
                             imagePath = imagePath,
                             notes = notes.ifBlank { null },
-                            existingItem = existingItem
+                            existingItem = existingItem,
+                            warrantyExpiry = warrantyExpiry,
+                            shelfLifeExpiry = shelfLifeExpiry,
+                            purchaseChannel = purchaseChannel.ifBlank { null },
+                            relatedLink = relatedLink.ifBlank { null }
                         )
                         onNavigateBack()
                     }

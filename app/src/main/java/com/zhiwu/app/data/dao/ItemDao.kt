@@ -51,6 +51,48 @@ interface ItemDao {
     """)
     fun getItemsByTag(tagId: Long): Flow<List<ItemWithDetails>>
     
+    /** 按状态筛选物品 */
+    @Transaction
+    @Query("SELECT * FROM items WHERE status = :status ORDER BY createdAt DESC")
+    fun getItemsByStatus(status: String): Flow<List<ItemWithDetails>>
+    
+    /** 获取使用中的物品 */
+    @Transaction
+    @Query("SELECT * FROM items WHERE status = 'IN_USE' ORDER BY createdAt DESC")
+    fun getInUseItems(): Flow<List<ItemWithDetails>>
+    
+    /** 获取闲置物品 */
+    @Transaction
+    @Query("SELECT * FROM items WHERE status = 'IDLE' ORDER BY createdAt DESC")
+    fun getIdleItems(): Flow<List<ItemWithDetails>>
+    
+    /** 获取已售出物品 */
+    @Transaction
+    @Query("SELECT * FROM items WHERE status = 'SOLD' ORDER BY soldDate DESC")
+    fun getSoldItems(): Flow<List<ItemWithDetails>>
+    
+    /** 获取保修期即将到期的物品（7天内） */
+    @Transaction
+    @Query("""
+        SELECT * FROM items 
+        WHERE warrantyExpiry IS NOT NULL 
+        AND warrantyExpiry BETWEEN :now AND :sevenDaysLater
+        AND status = 'IN_USE'
+        ORDER BY warrantyExpiry ASC
+    """)
+    fun getWarrantyExpiringItems(now: Long = System.currentTimeMillis(), sevenDaysLater: Long = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000): Flow<List<ItemWithDetails>>
+    
+    /** 获取保质期即将到期的物品（7天内） */
+    @Transaction
+    @Query("""
+        SELECT * FROM items 
+        WHERE shelfLifeExpiry IS NOT NULL 
+        AND shelfLifeExpiry BETWEEN :now AND :sevenDaysLater
+        AND status = 'IN_USE'
+        ORDER BY shelfLifeExpiry ASC
+    """)
+    fun getShelfLifeExpiringItems(now: Long = System.currentTimeMillis(), sevenDaysLater: Long = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000): Flow<List<ItemWithDetails>>
+    
     /** 插入物品，返回ID */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: Item): Long
@@ -79,9 +121,17 @@ interface ItemDao {
     @Query("SELECT COUNT(*) FROM items")
     fun getTotalItemCount(): Flow<Int>
     
+    /** 获取使用中物品数量 */
+    @Query("SELECT COUNT(*) FROM items WHERE status = 'IN_USE'")
+    fun getInUseItemCount(): Flow<Int>
+    
     /** 获取总花费 */
     @Query("SELECT COALESCE(SUM(price), 0.0) FROM items")
     fun getTotalCost(): Flow<Double>
+    
+    /** 获取已售出物品总收入 */
+    @Query("SELECT COALESCE(SUM(soldPrice), 0.0) FROM items WHERE soldPrice IS NOT NULL")
+    fun getTotalSoldIncome(): Flow<Double>
     
     /** 获取各分类统计 */
     @Query("""
@@ -93,4 +143,20 @@ interface ItemDao {
         ORDER BY itemCount DESC
     """)
     fun getCategoryStats(): Flow<List<com.zhiwu.app.data.entity.CategoryWithCount>>
+    
+    /** 更新物品使用次数 */
+    @Query("UPDATE items SET usageCount = usageCount + 1, updatedAt = :now WHERE id = :itemId")
+    suspend fun incrementUsageCount(itemId: Long, now: Long = System.currentTimeMillis())
+    
+    /** 标记物品为已售出 */
+    @Query("UPDATE items SET status = 'SOLD', soldPrice = :soldPrice, soldDate = :soldDate, updatedAt = :now WHERE id = :itemId")
+    suspend fun markAsSold(itemId: Long, soldPrice: Double, soldDate: Long = System.currentTimeMillis(), now: Long = System.currentTimeMillis())
+    
+    /** 标记物品为闲置 */
+    @Query("UPDATE items SET status = 'IDLE', updatedAt = :now WHERE id = :itemId")
+    suspend fun markAsIdle(itemId: Long, now: Long = System.currentTimeMillis())
+    
+    /** 标记物品为使用中 */
+    @Query("UPDATE items SET status = 'IN_USE', updatedAt = :now WHERE id = :itemId")
+    suspend fun markAsInUse(itemId: Long, now: Long = System.currentTimeMillis())
 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.zhiwu.app.data.entity.ItemStatus
 import com.zhiwu.app.data.entity.ItemWithDetails
 import com.zhiwu.app.ui.animation.clickScale
 import com.zhiwu.app.ui.theme.PriceColor
@@ -35,7 +36,8 @@ fun ItemListCard(
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
+    val dateFormat = remember { SimpleDateFormat("yy/MM/dd", Locale.getDefault()) }
+    val itemStatus = remember { ItemStatus.valueOf(itemWithDetails.item.status) }
     
     GlassCard(
         modifier = modifier
@@ -63,12 +65,23 @@ fun ItemListCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = itemWithDetails.item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = itemWithDetails.item.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    
+                    // 物品状态标签
+                    if (itemStatus != ItemStatus.IN_USE) {
+                        ItemStatusChip(status = itemStatus)
+                    }
+                }
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -88,12 +101,22 @@ fun ItemListCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
-                    // 使用单行显示，防止日期被裁剪为两行
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
+                    )
+                }
+                
+                // 日均价格
+                val holdingDays = itemWithDetails.item.getHoldingDays()
+                if (holdingDays > 0) {
+                    val dailyPrice = itemWithDetails.item.calculateDailyPrice()
+                    Text(
+                        text = "日均 ¥${String.format("%.2f", dailyPrice)} · 持有${holdingDays}天",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
                 }
                 
@@ -112,11 +135,24 @@ fun ItemListCard(
             }
             
             // 价格
-            Text(
-                text = "¥${String.format("%.2f", itemWithDetails.item.price)}",
-                style = MaterialTheme.typography.titleMedium,
-                color = PriceColor
-            )
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = "¥${String.format("%.2f", itemWithDetails.item.price)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = PriceColor
+                )
+                
+                // 售出价格
+                if (itemWithDetails.item.soldPrice != null) {
+                    Text(
+                        text = "售 ¥${String.format("%.2f", itemWithDetails.item.soldPrice)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
         }
     }
 }
@@ -132,6 +168,7 @@ fun ItemGridCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val dateFormat = remember { SimpleDateFormat("MM-dd", Locale.getDefault()) }
+    val itemStatus = remember { ItemStatus.valueOf(itemWithDetails.item.status) }
     
     GlassCard(
         modifier = modifier
@@ -172,6 +209,17 @@ fun ItemGridCard(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                             modifier = Modifier.size(48.dp)
                         )
+                    }
+                }
+                
+                // 状态标签
+                if (itemStatus != ItemStatus.IN_USE) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        ItemStatusChip(status = itemStatus)
                     }
                 }
             }

@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.zhiwu.app.data.dao.CategoryDao
 import com.zhiwu.app.data.dao.ItemDao
 import com.zhiwu.app.data.dao.TagDao
+import com.zhiwu.app.data.dao.WishItemDao
 import com.zhiwu.app.data.entity.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,9 +22,10 @@ import kotlinx.coroutines.launch
         Item::class,
         Category::class,
         Tag::class,
-        ItemTagCrossRef::class
+        ItemTagCrossRef::class,
+        WishItem::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class ZhiWuDatabase : RoomDatabase() {
@@ -31,6 +33,7 @@ abstract class ZhiWuDatabase : RoomDatabase() {
     abstract fun itemDao(): ItemDao
     abstract fun categoryDao(): CategoryDao
     abstract fun tagDao(): TagDao
+    abstract fun wishItemDao(): WishItemDao
     
     companion object {
         @Volatile
@@ -53,6 +56,7 @@ abstract class ZhiWuDatabase : RoomDatabase() {
                     ZhiWuDatabase::class.java,
                     "zhiwu_database"
                 )
+                .fallbackToDestructiveMigration()
                 .addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)

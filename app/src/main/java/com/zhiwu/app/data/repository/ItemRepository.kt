@@ -45,6 +45,31 @@ class ItemRepository(private val itemDao: ItemDao) {
         return itemDao.getItemsByTag(tagId)
     }
     
+    /** 按状态筛选 */
+    fun getItemsByStatus(status: String): Flow<List<ItemWithDetails>> {
+        return itemDao.getItemsByStatus(status)
+    }
+    
+    /** 获取使用中物品数量 */
+    fun getInUseItemCount(): Flow<Int> {
+        return itemDao.getInUseItemCount()
+    }
+    
+    /** 获取已售出物品总收入 */
+    fun getTotalSoldIncome(): Flow<Double> {
+        return itemDao.getTotalSoldIncome()
+    }
+    
+    /** 获取保修期即将到期的物品 */
+    fun getWarrantyExpiringItems(): Flow<List<ItemWithDetails>> {
+        return itemDao.getWarrantyExpiringItems()
+    }
+    
+    /** 获取保质期即将到期的物品 */
+    fun getShelfLifeExpiringItems(): Flow<List<ItemWithDetails>> {
+        return itemDao.getShelfLifeExpiringItems()
+    }
+    
     /** 插入物品 */
     suspend fun insertItem(item: Item, tagIds: List<Long>): Long {
         val itemId = itemDao.insertItem(item)
@@ -73,5 +98,25 @@ class ItemRepository(private val itemDao: ItemDao) {
     suspend fun deleteItemById(itemId: Long) {
         itemDao.deleteItemTags(itemId)
         itemDao.deleteItemById(itemId)
+    }
+    
+    /** 标记物品为已售出 */
+    suspend fun markAsSold(itemId: Long, soldPrice: Double) {
+        itemDao.markAsSold(itemId, soldPrice)
+    }
+    
+    /** 标记物品为闲置 */
+    suspend fun markAsIdle(itemId: Long) {
+        itemDao.markAsIdle(itemId)
+    }
+    
+    /** 标记物品为使用中 */
+    suspend fun markAsInUse(itemId: Long) {
+        itemDao.markAsInUse(itemId)
+    }
+    
+    /** 增加使用次数 */
+    suspend fun incrementUsageCount(itemId: Long) {
+        itemDao.incrementUsageCount(itemId)
     }
 }

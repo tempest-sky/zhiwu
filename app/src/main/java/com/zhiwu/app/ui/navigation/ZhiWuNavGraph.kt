@@ -23,6 +23,7 @@ object Routes {
     const val STATISTICS = "statistics"
     const val MANAGE_CATEGORIES = "manage_categories"
     const val MANAGE_TAGS = "manage_tags"
+    const val WISH_LIST = "wish_list"
     
     fun editItem(itemId: Long) = "edit_item/$itemId"
 }
@@ -107,6 +108,9 @@ fun ZhiWuNavGraph(
                 },
                 onNavigateToManageTags = {
                     navController.navigate(Routes.MANAGE_TAGS)
+                },
+                onNavigateToWishList = {
+                    navController.navigate(Routes.WISH_LIST)
                 }
             )
         }
@@ -155,6 +159,17 @@ fun ZhiWuNavGraph(
             ManageTagsScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        // 心愿清单
+        composable(Routes.WISH_LIST) {
+            WishListScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddWish = {
+                    // 添加心愿的逻辑已在WishListScreen内部处理
+                }
             )
         }
     }
