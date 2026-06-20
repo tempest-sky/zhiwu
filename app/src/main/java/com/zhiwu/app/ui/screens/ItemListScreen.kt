@@ -49,9 +49,14 @@ fun ItemListScreen(
     val shelfLifeExpiringItems by viewModel.shelfLifeExpiringItems.collectAsState()
     
     var showMenu by remember { mutableStateOf(false) }
+    var isDataLoaded by remember { mutableStateOf(false) }
     
-    // 优化：使用items状态直接判断是否加载完成，避免延迟
-    val isLoading = items.isEmpty() && searchQuery.isEmpty() && selectedCategoryId == null
+    // 监听数据加载完成
+    LaunchedEffect(items) {
+        if (items.isNotEmpty() || (searchQuery.isEmpty() && selectedCategoryId == null && selectedStatus == null)) {
+            isDataLoaded = true
+        }
+    }
     
     Scaffold(
         topBar = {
@@ -77,27 +82,6 @@ fun ItemListScreen(
                             Icon(
                                 imageVector = Icons.Default.FavoriteBorder,
                                 contentDescription = "心愿清单"
-                            )
-                        }
-                    }
-                    
-                    // 视图切换按钮
-                    IconButton(onClick = { viewModel.toggleViewMode() }) {
-                        AnimatedContent(
-                            targetState = isGridView,
-                            transitionSpec = {
-                                fadeIn(
-                                    animationSpec = tween(AnimationTokens.DURATION_SHORT3)
-                                ) togetherWith fadeOut(
-                                    animationSpec = tween(AnimationTokens.DURATION_SHORT3)
-                                )
-                            },
-                            label = "viewMode"
-                        ) { isGrid ->
-                            Icon(
-                                imageVector = if (isGrid) Icons.Default.ViewList 
-                                    else Icons.Default.GridView,
-                                contentDescription = if (isGrid) "列表视图" else "网格视图"
                             )
                         }
                     }
@@ -149,11 +133,25 @@ fun ItemListScreen(
             )
         },
         floatingActionButton = {
-            GlassFloatingActionButton(
-                onClick = onNavigateToAddItem,
-                icon = Icons.Default.Add,
-                contentDescription = "添加物品"
-            )
+            // 底部悬浮栏：视图切换 + 添加按钮
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 视图切换按钮
+                GlassFloatingActionButton(
+                    onClick = { viewModel.toggleViewMode() },
+                    icon = if (isGridView) Icons.Default.ViewList else Icons.Default.GridView,
+                    contentDescription = if (isGridView) "列表视图" else "网格视图"
+                )
+                
+                // 添加按钮
+                GlassFloatingActionButton(
+                    onClick = onNavigateToAddItem,
+                    icon = Icons.Default.Add,
+                    contentDescription = "添加物品"
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -187,7 +185,7 @@ fun ItemListScreen(
             
             // 内容区域
             when {
-                isLoading -> {
+                !isDataLoaded -> {
                     SkeletonLoader(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )

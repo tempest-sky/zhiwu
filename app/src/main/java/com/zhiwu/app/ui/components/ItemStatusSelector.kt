@@ -29,24 +29,59 @@ fun ItemStatusSelector(
         
         Spacer(Modifier.height(8.dp))
         
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // 使用两行布局，每行两个按钮，避免文字错位
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ItemStatus.values().forEach { status ->
-                FilterChip(
-                    selected = selectedStatus == status,
-                    onClick = { onStatusSelected(status) },
-                    label = { Text(status.displayName) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = status.icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ItemStatus.values().take(2).forEach { status ->
+                    FilterChip(
+                        selected = selectedStatus == status,
+                        onClick = { onStatusSelected(status) },
+                        label = { 
+                            Text(
+                                text = status.displayName,
+                                maxLines = 1
+                            ) 
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = status.icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ItemStatus.values().drop(2).forEach { status ->
+                    FilterChip(
+                        selected = selectedStatus == status,
+                        onClick = { onStatusSelected(status) },
+                        label = { 
+                            Text(
+                                text = status.displayName,
+                                maxLines = 1
+                            ) 
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = status.icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }

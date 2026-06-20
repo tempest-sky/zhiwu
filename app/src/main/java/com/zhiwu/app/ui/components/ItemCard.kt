@@ -91,8 +91,7 @@ fun ItemListCard(
                         text = itemWithDetails.category.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        maxLines = 1
                     )
                     
                     Text(
@@ -101,11 +100,13 @@ fun ItemListCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
+                    // 日期固定宽度，防止被裁剪
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier.widthIn(min = 60.dp)
                     )
                 }
                 
