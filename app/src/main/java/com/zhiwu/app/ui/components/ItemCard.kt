@@ -80,8 +80,9 @@ fun ItemListCard(
             // 信息区域
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // 第一行：物品名称
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -100,10 +101,7 @@ fun ItemListCard(
                     }
                 }
                 
-                // 分类、日期、天数、日均 - 同一行显示
-                val holdingDays = itemWithDetails.item.getHoldingDays()
-                val dailyPrice = itemWithDetails.item.calculateDailyPrice()
-                
+                // 第二行：分类 + 日期
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -122,12 +120,20 @@ fun ItemListCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
                     )
-                    
+                }
+                
+                // 第三行：已购天数 + 日均成本
+                val holdingDays = itemWithDetails.item.getHoldingDays()
+                val dailyPrice = itemWithDetails.item.calculateDailyPrice()
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(
                         text = "已购${holdingDays}天",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
                     if (holdingDays > 0) {
@@ -135,8 +141,7 @@ fun ItemListCard(
                             text = "日均¥${String.format("%.1f", dailyPrice)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
@@ -155,10 +160,10 @@ fun ItemListCard(
                 }
             }
             
-            // 价格 - 靠顶部显示，避免占据全部高度
+            // 价格 - 靠顶部显示，只占一行高度
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Top
+                modifier = Modifier.align(Alignment.Top)
             ) {
                 Text(
                     text = "¥${String.format("%.2f", itemWithDetails.item.price)}",
