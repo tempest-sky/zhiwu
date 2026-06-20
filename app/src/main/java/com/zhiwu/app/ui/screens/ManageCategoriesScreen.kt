@@ -16,7 +16,6 @@ import com.zhiwu.app.data.entity.Category
 import com.zhiwu.app.ui.components.GlassCard
 import com.zhiwu.app.viewmodel.ItemViewModel
 import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.draggableHandle
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
@@ -174,16 +173,12 @@ private fun CategoryItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 拖拽手柄 - 长按拖动
+            // 拖拽手柄图标
             Icon(
                 imageVector = Icons.Default.DragHandle,
                 contentDescription = "长按拖拽排序",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier
-                    .size(24.dp)
-                    .draggableHandle(
-                        enabled = !category.isPreset
-                    )
+                modifier = Modifier.size(24.dp)
             )
             
             Spacer(modifier = Modifier.width(12.dp))
