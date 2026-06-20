@@ -145,31 +145,32 @@ fun ItemListScreen(
                                     contentDescription = "更多"
                                 )
                             }
-                        
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("管理分类") },
-                                onClick = {
-                                    showMenu = false
-                                    onNavigateToManageCategories()
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Category, null)
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("管理标签") },
-                                onClick = {
-                                    showMenu = false
-                                    onNavigateToManageTags()
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Label, null)
-                                }
-                            )
+                            
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("管理分类") },
+                                    onClick = {
+                                        showMenu = false
+                                        onNavigateToManageCategories()
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Category, null)
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("管理标签") },
+                                    onClick = {
+                                        showMenu = false
+                                        onNavigateToManageTags()
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Label, null)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
