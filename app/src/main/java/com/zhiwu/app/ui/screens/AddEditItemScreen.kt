@@ -27,11 +27,7 @@ import com.zhiwu.app.data.entity.Tag
 import com.zhiwu.app.ui.components.GlassButton
 import com.zhiwu.app.ui.components.GlassCard
 import com.zhiwu.app.ui.components.TagSelector
-import com.zhiwu.app.util.ImageCropper
 import com.zhiwu.app.viewmodel.ItemViewModel
-import com.vanniktech.android_image_cropper.CropImageContract
-import com.vanniktech.android_image_cropper.CropImageContractOptions
-import com.vanniktech.android_image_cropper.CropImageOptions
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -87,35 +83,13 @@ fun AddEditItemScreen(
         }
     }
     
+    // 选择图片（带裁剪）
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            // 启动裁剪
-            cropLauncher.launch(
-                CropImageContractOptions(
-                    uri = it,
-                    cropImageOptions = CropImageOptions().apply {
-                        aspectRatioX = 1
-                        aspectRatioY = 1
-                        fixAspectRatio = true
-                        outputCompressQuality = 90
-                        outputCompressFormat = android.graphics.Bitmap.CompressFormat.JPEG
-                    }
-                )
-            )
-        }
-    }
-    
-    // 裁剪启动器
-    val cropLauncher = rememberLauncherForActivityResult(
-        contract = CropImageContract()
-    ) { result ->
-        if (result.isSuccessful) {
-            result.uriContent?.let { croppedUri ->
-                scope.launch {
-                    imagePath = viewModel.saveImageToInternal(context, croppedUri)
-                }
+            scope.launch {
+                imagePath = viewModel.saveImageToInternal(context, it)
             }
         }
     }
