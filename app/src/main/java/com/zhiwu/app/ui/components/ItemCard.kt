@@ -128,7 +128,7 @@ fun ItemListCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CalendarToday,
+                            imageVector = Icons.Default.DateRange,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -140,14 +140,14 @@ fun ItemListCard(
                         )
                     }
                     
-                    // 日均成本
+                        // 日均成本
                     if (holdingDays > 0) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.TrendingDown,
+                                imageVector = Icons.Default.AttachMoney,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
                                 tint = MaterialTheme.colorScheme.primary
