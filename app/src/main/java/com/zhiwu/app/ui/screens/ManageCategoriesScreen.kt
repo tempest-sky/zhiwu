@@ -1,22 +1,27 @@
 package com.zhiwu.app.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.zhiwu.app.data.entity.Category
 import com.zhiwu.app.ui.components.GlassCard
 import com.zhiwu.app.viewmodel.ItemViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /**
- * 分类管理页面
+ * 分类管理页面 - 支持长按拖动排序
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +34,26 @@ fun ManageCategoriesScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<Category?>(null) }
     var deletingCategory by remember { mutableStateOf<Category?>(null) }
+    
+    // 拖拽排序状态
+    var reorderedList by remember { mutableStateOf(categories) }
+    
+    // 同步categories变化
+    LaunchedEffect(categories) {
+        reorderedList = categories
+    }
+    
+    val listState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(
+        listState = listState,
+        onMove = { from, to ->
+            reorderedList = reorderedList.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+            // 实时更新排序
+            viewModel.updateCategorySortOrders(reorderedList)
+        }
+    )
     
     Scaffold(
         topBar = {
@@ -54,35 +79,25 @@ fun ManageCategoriesScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            state = listState
         ) {
             itemsIndexed(
-                items = categories,
+                items = reorderedList,
                 key = { _, category -> category.id }
             ) { index, category ->
-                CategoryItem(
-                    category = category,
-                    index = index,
-                    totalCount = categories.size,
-                    onMoveUp = {
-                        if (index > 0) {
-                            val newList = categories.toMutableList()
-                            val item = newList.removeAt(index)
-                            newList.add(index - 1, item)
-                            viewModel.updateCategorySortOrders(newList)
-                        }
-                    },
-                    onMoveDown = {
-                        if (index < categories.size - 1) {
-                            val newList = categories.toMutableList()
-                            val item = newList.removeAt(index)
-                            newList.add(index + 1, item)
-                            viewModel.updateCategorySortOrders(newList)
-                        }
-                    },
-                    onEdit = { editingCategory = category },
-                    onDelete = { deletingCategory = category }
-                )
+                ReorderableItem(
+                    state = reorderableState,
+                    key = category.id
+                ) { isDragging ->
+                    CategoryItem(
+                        category = category,
+                        isDragging = isDragging,
+                        onEdit = { editingCategory = category },
+                        onDelete = { deletingCategory = category },
+                        modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                    )
+                }
             }
         }
     }
@@ -141,49 +156,32 @@ fun ManageCategoriesScreen(
 @Composable
 private fun CategoryItem(
     category: Category,
-    index: Int,
-    totalCount: Int,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
+    isDragging: Boolean = false,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
+    val elevation = if (isDragging) 8.dp else 0.dp
+    
+    GlassCard(
+        modifier = modifier.fillMaxWidth(),
+        cornerRadius = 12.dp
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 排序按钮
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconButton(
-                    onClick = onMoveUp,
-                    enabled = index > 0,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        Icons.Default.KeyboardArrowUp,
-                        "上移",
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                IconButton(
-                    onClick = onMoveDown,
-                    enabled = index < totalCount - 1,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        Icons.Default.KeyboardArrowDown,
-                        "下移",
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            // 拖拽手柄图标
+            Icon(
+                imageVector = Icons.Default.DragHandle,
+                contentDescription = "拖拽排序",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(24.dp)
+            )
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
             Icon(
                 imageVector = getCategoryIcon(category.icon),

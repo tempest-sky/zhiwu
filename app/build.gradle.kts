@@ -91,6 +91,9 @@ dependencies {
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
     
+    // Drag to reorder
+    implementation("sh.calvin.reorderable:reorderable:2.4.3")
+    
     // Image cropping - Android Image Cropper
     implementation("com.vanniktech:android-image-cropper:4.6.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
