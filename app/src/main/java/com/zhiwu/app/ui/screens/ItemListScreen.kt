@@ -43,13 +43,9 @@ fun ItemListScreen(
     val isGridView by viewModel.isGridView.collectAsState()
     
     var showMenu by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
     
-    // 模拟初始加载
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(500)
-        isLoading = false
-    }
+    // 优化：使用items状态直接判断是否加载完成，避免延迟
+    val isLoading = items.isEmpty() && searchQuery.isEmpty() && selectedCategoryId == null
     
     Scaffold(
         topBar = {
@@ -129,15 +125,11 @@ fun ItemListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            GlassFloatingActionButton(
                 onClick = onNavigateToAddItem,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "添加物品"
-                )
-            }
+                icon = Icons.Default.Add,
+                contentDescription = "添加物品"
+            )
         }
     ) { paddingValues ->
         Column(

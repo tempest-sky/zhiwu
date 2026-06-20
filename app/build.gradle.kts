@@ -90,6 +90,9 @@ dependencies {
 
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Image cropping
+    implementation("com.vanniktech:android-image-cropper:4.6.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

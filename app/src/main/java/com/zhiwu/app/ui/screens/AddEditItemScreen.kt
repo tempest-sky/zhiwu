@@ -24,9 +24,14 @@ import com.zhiwu.app.data.entity.Category
 import com.zhiwu.app.data.entity.Item
 import com.zhiwu.app.data.entity.ItemWithDetails
 import com.zhiwu.app.data.entity.Tag
+import com.zhiwu.app.ui.components.GlassButton
 import com.zhiwu.app.ui.components.GlassCard
 import com.zhiwu.app.ui.components.TagSelector
+import com.zhiwu.app.util.ImageCropper
 import com.zhiwu.app.viewmodel.ItemViewModel
+import com.vanniktech.android_image_cropper.CropImageContract
+import com.vanniktech.android_image_cropper.CropImageContractOptions
+import com.vanniktech.android_image_cropper.CropImageOptions
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -86,8 +91,31 @@ fun AddEditItemScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            scope.launch {
-                imagePath = viewModel.saveImageToInternal(context, it)
+            // 启动裁剪
+            cropLauncher.launch(
+                CropImageContractOptions(
+                    uri = it,
+                    cropImageOptions = CropImageOptions().apply {
+                        aspectRatioX = 1
+                        aspectRatioY = 1
+                        fixAspectRatio = true
+                        outputCompressQuality = 90
+                        outputCompressFormat = android.graphics.Bitmap.CompressFormat.JPEG
+                    }
+                )
+            )
+        }
+    }
+    
+    // 裁剪启动器
+    val cropLauncher = rememberLauncherForActivityResult(
+        contract = CropImageContract()
+    ) { result ->
+        if (result.isSuccessful) {
+            result.uriContent?.let { croppedUri ->
+                scope.launch {
+                    imagePath = viewModel.saveImageToInternal(context, croppedUri)
+                }
             }
         }
     }
@@ -188,7 +216,7 @@ fun AddEditItemScreen(
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            OutlinedButton(
+                            GlassButton(
                                 onClick = {
                                     val imageDir = File(context.filesDir, "images")
                                     if (!imageDir.exists()) imageDir.mkdirs()
@@ -199,20 +227,16 @@ fun AddEditItemScreen(
                                         file
                                     )
                                     takePictureLauncher.launch(photoUri!!)
-                                }
-                            ) {
-                                Icon(Icons.Default.CameraAlt, null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text("拍照")
-                            }
+                                },
+                                icon = Icons.Default.CameraAlt,
+                                text = "拍照"
+                            )
                             
-                            OutlinedButton(
-                                onClick = { pickImageLauncher.launch("image/*") }
-                            ) {
-                                Icon(Icons.Default.PhotoLibrary, null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text("从相册选择")
-                            }
+                            GlassButton(
+                                onClick = { pickImageLauncher.launch("image/*") },
+                                icon = Icons.Default.PhotoLibrary,
+                                text = "从相册选择"
+                            )
                         }
                     }
                 }
@@ -367,7 +391,10 @@ fun AddEditItemScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = MaterialTheme.shapes.large
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 Icon(Icons.Default.Save, null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))

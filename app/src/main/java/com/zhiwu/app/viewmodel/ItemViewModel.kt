@@ -44,20 +44,21 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     
     // ==================== 数据流 ====================
     
+    // 使用Eagerly策略，确保数据在页面返回时立即可用，无需重新加载
     val categories: StateFlow<List<Category>> = categoryRepository.allCategories
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     
     val tags: StateFlow<List<Tag>> = tagRepository.allTags
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     
     val totalItemCount: StateFlow<Int> = itemRepository.totalItemCount
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     
     val totalCost: StateFlow<Double> = itemRepository.totalCost
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
     
     val categoryStats: StateFlow<List<CategoryWithCount>> = itemRepository.categoryStats
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     
     /** 物品列表（根据筛选条件动态变化） */
     val items: StateFlow<List<ItemWithDetails>> = combine(
@@ -73,7 +74,7 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
             tagId != null -> itemRepository.getItemsByTag(tagId)
             else -> itemRepository.allItems
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     
     // ==================== 操作方法 ====================
     

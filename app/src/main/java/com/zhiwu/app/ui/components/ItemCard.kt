@@ -77,7 +77,9 @@ fun ItemListCard(
                     Text(
                         text = itemWithDetails.category.name,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     
                     Text(
@@ -86,10 +88,12 @@ fun ItemListCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
+                    // 使用单行显示，防止日期被裁剪为两行
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
                     )
                 }
                 
