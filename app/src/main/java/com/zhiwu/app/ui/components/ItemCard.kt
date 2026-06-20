@@ -1,9 +1,11 @@
 package com.zhiwu.app.ui.components
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,10 +32,14 @@ import java.util.*
 /**
  * 物品列表卡片
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ItemListCard(
     itemWithDetails: ItemWithDetails,
+    isSelected: Boolean = false,
+    isSelectionMode: Boolean = false,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -43,18 +49,28 @@ fun ItemListCard(
     GlassCard(
         modifier = modifier
             .clickScale(interactionSource)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
+                onLongClick = onLongClick
             )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // 选择模式下的复选框
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onClick() }
+                )
+            }
+            
             // 图片 - 增大尺寸
             ItemImage(
                 imagePath = itemWithDetails.item.imagePath,
@@ -84,11 +100,14 @@ fun ItemListCard(
                     }
                 }
                 
+                // 分类、日期、天数、日均 - 同一行显示
+                val holdingDays = itemWithDetails.item.getHoldingDays()
+                val dailyPrice = itemWithDetails.item.calculateDailyPrice()
+                
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 分类名称
                     Text(
                         text = itemWithDetails.category.name,
                         style = MaterialTheme.typography.bodySmall,
@@ -97,36 +116,27 @@ fun ItemListCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     
-                    // 日期 - 保证完整显示
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
                     )
-                }
-                
-                // 日均成本和已购买天数 - 竖列显示
-                val holdingDays = itemWithDetails.item.getHoldingDays()
-                val dailyPrice = itemWithDetails.item.calculateDailyPrice()
-                
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    // 已购买天数
+                    
                     Text(
                         text = "已购${holdingDays}天",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
                     )
                     
-                    // 日均成本
                     if (holdingDays > 0) {
                         Text(
-                            text = "日均¥${String.format("%.2f", dailyPrice)}",
+                            text = "日均¥${String.format("%.1f", dailyPrice)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1
                         )
                     }
                 }
@@ -145,9 +155,10 @@ fun ItemListCard(
                 }
             }
             
-            // 价格
+            // 价格 - 靠顶部显示，避免占据全部高度
             Column(
-                horizontalAlignment = Alignment.End
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Top
             ) {
                 Text(
                     text = "¥${String.format("%.2f", itemWithDetails.item.price)}",
@@ -158,7 +169,7 @@ fun ItemListCard(
                 // 售出价格
                 if (itemWithDetails.item.soldPrice != null) {
                     Text(
-                        text = "售 ¥${String.format("%.2f", itemWithDetails.item.soldPrice)}",
+                        text = "售¥${String.format("%.0f", itemWithDetails.item.soldPrice)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )

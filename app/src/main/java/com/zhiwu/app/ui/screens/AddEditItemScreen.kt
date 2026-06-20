@@ -147,6 +147,37 @@ fun AddEditItemScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    // 验证表单
+                    nameError = name.isBlank()
+                    priceError = priceText.toDoubleOrNull() == null
+                    categoryError = selectedCategoryId == 0L
+                    
+                    if (!nameError && !priceError && !categoryError) {
+                        viewModel.saveItem(
+                            name = name.trim(),
+                            price = priceText.toDouble(),
+                            purchaseDate = purchaseDate,
+                            categoryId = selectedCategoryId,
+                            tagIds = selectedTagIds.toList(),
+                            imagePath = imagePath,
+                            notes = notes.ifBlank { null },
+                            existingItem = existingItem,
+                            warrantyExpiry = warrantyExpiry,
+                            shelfLifeExpiry = shelfLifeExpiry,
+                            purchaseChannel = purchaseChannel.ifBlank { null },
+                            relatedLink = relatedLink.ifBlank { null }
+                        )
+                        onNavigateBack()
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.Save, "保存")
+            }
         }
     ) { paddingValues ->
         Column(
@@ -399,50 +430,6 @@ fun AddEditItemScreen(
                     )
                 }
             }
-            
-            // 保存按钮
-            Button(
-                onClick = {
-                    // 验证表单
-                    nameError = name.isBlank()
-                    priceError = priceText.toDoubleOrNull() == null
-                    categoryError = selectedCategoryId == 0L
-                    
-                    if (!nameError && !priceError && !categoryError) {
-                        viewModel.saveItem(
-                            name = name.trim(),
-                            price = priceText.toDouble(),
-                            purchaseDate = purchaseDate,
-                            categoryId = selectedCategoryId,
-                            tagIds = selectedTagIds.toList(),
-                            imagePath = imagePath,
-                            notes = notes.ifBlank { null },
-                            existingItem = existingItem,
-                            warrantyExpiry = warrantyExpiry,
-                            shelfLifeExpiry = shelfLifeExpiry,
-                            purchaseChannel = purchaseChannel.ifBlank { null },
-                            relatedLink = relatedLink.ifBlank { null }
-                        )
-                        onNavigateBack()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Icon(Icons.Default.Save, null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = if (isEditing) "保存修改" else "添加物品",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
     

@@ -52,6 +52,11 @@ fun ItemListScreen(
     var showMenu by remember { mutableStateOf(false) }
     var isDataLoaded by remember { mutableStateOf(false) }
     
+    // 批量选择状态
+    var selectedItems by remember { mutableStateOf(setOf<Long>()) }
+    var isSelectionMode by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    
     // 监听数据加载完成
     LaunchedEffect(items) {
         if (items.isNotEmpty() || (searchQuery.isEmpty() && selectedCategoryId == null && selectedStatus == null)) {
@@ -64,47 +69,82 @@ fun ItemListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "值物",
+                        text = if (isSelectionMode) "已选${selectedItems.size}项" else "值物",
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = {
+                            isSelectionMode = false
+                            selectedItems = emptySet()
+                        }) {
+                            Icon(Icons.Default.Close, "取消选择")
+                        }
+                    }
+                },
                 actions = {
-                    // 心愿清单按钮
-                    BadgedBox(
-                        badge = {
-                            if (wishItemCount > 0) {
-                                Badge(
-                                    modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
-                                ) {
-                                    Text("$wishItemCount")
+                    if (isSelectionMode) {
+                        // 全选/取消全选
+                        IconButton(onClick = {
+                            if (selectedItems.size == items.size) {
+                                selectedItems = emptySet()
+                            } else {
+                                selectedItems = items.map { it.item.id }.toSet()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = if (selectedItems.size == items.size) Icons.Default.CheckBox 
+                                    else Icons.Default.CheckBoxOutlineBlank,
+                                contentDescription = "全选"
+                            )
+                        }
+                        
+                        // 删除按钮
+                        IconButton(onClick = { showDeleteConfirmDialog = true }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                "删除",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else {
+                        // 心愿清单按钮
+                        BadgedBox(
+                            badge = {
+                                if (wishItemCount > 0) {
+                                    Badge(
+                                        modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
+                                    ) {
+                                        Text("$wishItemCount")
+                                    }
                                 }
                             }
+                        ) {
+                            IconButton(onClick = onNavigateToWishList) {
+                                Icon(
+                                    imageVector = Icons.Default.FavoriteBorder,
+                                    contentDescription = "心愿清单"
+                                )
+                            }
                         }
-                    ) {
-                        IconButton(onClick = onNavigateToWishList) {
+                        
+                        // 统计按钮
+                        IconButton(onClick = onNavigateToStatistics) {
                             Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
-                                contentDescription = "心愿清单"
+                                imageVector = Icons.Outlined.BarChart,
+                                contentDescription = "统计"
                             )
                         }
-                    }
-                    
-                    // 统计按钮
-                    IconButton(onClick = onNavigateToStatistics) {
-                        Icon(
-                            imageVector = Icons.Outlined.BarChart,
-                            contentDescription = "统计"
-                        )
-                    }
-                    
-                    // 更多菜单
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "更多"
-                            )
-                        }
+                        
+                        // 更多菜单
+                        Box {
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "更多"
+                                )
+                            }
                         
                         DropdownMenu(
                             expanded = showMenu,
@@ -218,7 +258,23 @@ fun ItemListScreen(
                                 items = items,
                                 warrantyExpiringItems = warrantyExpiringItems,
                                 shelfLifeExpiringItems = shelfLifeExpiringItems,
+                                selectedItems = selectedItems,
+                                isSelectionMode = isSelectionMode,
                                 onItemClick = { onNavigateToEditItem(it.item.id) },
+                                onLongPress = { itemId ->
+                                    isSelectionMode = true
+                                    selectedItems = setOf(itemId)
+                                },
+                                onToggleSelect = { itemId ->
+                                    selectedItems = if (itemId in selectedItems) {
+                                        selectedItems - itemId
+                                    } else {
+                                        selectedItems + itemId
+                                    }
+                                    if (selectedItems.isEmpty()) {
+                                        isSelectionMode = false
+                                    }
+                                },
                                 onDeleteItem = { viewModel.deleteItem(it) }
                             )
                         }
@@ -227,11 +283,36 @@ fun ItemListScreen(
             }
         }
     }
+    
+    // 批量删除确认对话框
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("确认删除") },
+            text = { Text("确定要删除选中的 ${selectedItems.size} 个物品吗？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // 批量删除
+                        items.filter { it.item.id in selectedItems }.forEach {
+                            viewModel.deleteItem(it.item)
+                        }
+                        selectedItems = emptySet()
+                        isSelectionMode = false
+                        showDeleteConfirmDialog = false
+                    }
+                ) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 }
-
-/**
- * 状态筛选芯片 - 横向滚动
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusFilterChips(
@@ -274,7 +355,11 @@ private fun ItemListView(
     items: List<ItemWithDetails>,
     warrantyExpiringItems: List<ItemWithDetails>,
     shelfLifeExpiringItems: List<ItemWithDetails>,
+    selectedItems: Set<Long>,
+    isSelectionMode: Boolean,
     onItemClick: (ItemWithDetails) -> Unit,
+    onLongPress: (Long) -> Unit,
+    onToggleSelect: (Long) -> Unit,
     onDeleteItem: (com.zhiwu.app.data.entity.Item) -> Unit
 ) {
     LazyColumn(
@@ -305,11 +390,20 @@ private fun ItemListView(
             items = items,
             key = { it.item.id }
         ) { itemWithDetails ->
-            var showDeleteDialog by remember { mutableStateOf(false) }
+            val isSelected = itemWithDetails.item.id in selectedItems
             
             ItemListCard(
                 itemWithDetails = itemWithDetails,
-                onClick = { onItemClick(itemWithDetails) },
+                isSelected = isSelected,
+                isSelectionMode = isSelectionMode,
+                onClick = {
+                    if (isSelectionMode) {
+                        onToggleSelect(itemWithDetails.item.id)
+                    } else {
+                        onItemClick(itemWithDetails)
+                    }
+                },
+                onLongClick = { onLongPress(itemWithDetails.item.id) },
                 modifier = Modifier.animateItemPlacement(
                     animationSpec = tween(
                         durationMillis = AnimationTokens.DURATION_MEDIUM2,
@@ -317,16 +411,9 @@ private fun ItemListView(
                     )
                 )
             )
-            
-            if (showDeleteDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDeleteDialog = false },
-                    title = { Text("确认删除") },
-                    text = { Text("确定要删除「${itemWithDetails.item.name}」吗？") },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                onDeleteItem(itemWithDetails.item)
+        }
+    }
+}
                                 showDeleteDialog = false
                             }
                         ) {
