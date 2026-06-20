@@ -28,7 +28,7 @@ import com.zhiwu.app.ui.theme.*
 fun GlassCard(
     modifier: Modifier = Modifier,
     cornerRadius: Dp = 16.dp,
-    elevation: Dp = 4.dp,
+    elevation: Dp = 0.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
@@ -49,20 +49,10 @@ fun GlassCard(
     
     Column(
         modifier = modifier
-            .shadow(
-                elevation = elevation,
-                shape = shape,
-                ambientColor = Color.Black.copy(alpha = 0.08f),
-                spotColor = Color.Black.copy(alpha = 0.12f)
-            )
             .clip(shape)
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        backgroundColor,
-                        backgroundColor.copy(alpha = backgroundColor.alpha * 0.8f)
-                    )
-                )
+                color = backgroundColor,
+                shape = shape
             )
             .border(
                 width = 1.dp,

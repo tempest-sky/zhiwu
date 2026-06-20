@@ -88,73 +88,46 @@ fun ItemListCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 分类名称限制最大宽度，确保日期有空间
+                    // 分类名称
                     Text(
                         text = itemWithDetails.category.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
+                        overflow = TextOverflow.Ellipsis
                     )
                     
-                    Text(
-                        text = "•",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    // 日期固定宽度，确保完整显示
+                    // 日期 - 保证完整显示
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        modifier = Modifier.width(65.dp)
+                        maxLines = 1
                     )
                 }
                 
-                // 日均成本和已购买天数 - 独立一行显示
+                // 日均成本和已购买天数 - 竖列显示
                 val holdingDays = itemWithDetails.item.getHoldingDays()
                 val dailyPrice = itemWithDetails.item.calculateDailyPrice()
                 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     // 已购买天数
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = "📅",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "${holdingDays}天",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    Text(
+                        text = "已购${holdingDays}天",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     
                     // 日均成本
                     if (holdingDays > 0) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "💰",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                            Text(
-                                text = "¥${String.format("%.2f", dailyPrice)}/天",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        Text(
+                            text = "日均¥${String.format("%.2f", dailyPrice)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
                 
