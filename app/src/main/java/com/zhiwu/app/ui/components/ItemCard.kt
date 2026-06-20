@@ -87,11 +87,14 @@ fun ItemListCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // 分类名称限制最大宽度，确保日期有空间
                     Text(
                         text = itemWithDetails.category.name,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     
                     Text(
@@ -100,13 +103,13 @@ fun ItemListCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
-                    // 日期固定宽度，防止被裁剪
+                    // 日期固定宽度，确保完整显示
                     Text(
                         text = dateFormat.format(Date(itemWithDetails.item.purchaseDate)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        modifier = Modifier.widthIn(min = 60.dp)
+                        modifier = Modifier.width(65.dp)
                     )
                 }
                 
