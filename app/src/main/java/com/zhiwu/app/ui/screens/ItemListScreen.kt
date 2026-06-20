@@ -5,6 +5,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -72,7 +73,9 @@ fun ItemListScreen(
                     BadgedBox(
                         badge = {
                             if (wishItemCount > 0) {
-                                Badge {
+                                Badge(
+                                    modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
+                                ) {
                                     Text("$wishItemCount")
                                 }
                             }
@@ -227,7 +230,7 @@ fun ItemListScreen(
 }
 
 /**
- * 状态筛选芯片
+ * 状态筛选芯片 - 横向滚动
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -236,16 +239,19 @@ fun StatusFilterChips(
     onStatusSelected: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
+    LazyRow(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FilterChip(
-            selected = selectedStatus == null,
-            onClick = { onStatusSelected(null) },
-            label = { Text("全部") }
-        )
-        ItemStatus.values().forEach { status ->
+        item {
+            FilterChip(
+                selected = selectedStatus == null,
+                onClick = { onStatusSelected(null) },
+                label = { Text("全部") }
+            )
+        }
+        
+        items(ItemStatus.values().toList()) { status ->
             FilterChip(
                 selected = selectedStatus == status.name,
                 onClick = { onStatusSelected(status.name) },

@@ -18,7 +18,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.zhiwu.app.data.entity.CategoryWithCount
 import com.zhiwu.app.ui.animation.AnimationTokens
@@ -252,32 +255,40 @@ private fun CategoryStatItem(
             drawCircle(color = color)
         }
         
-        // 分类名称
+        // 分类名称 - 占据剩余空间，超长时显示省略号
         Text(
             text = name,
             style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
         
-        // 数量
+        // 数量 - 固定宽度，右对齐
         Text(
             text = "${count}件",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(48.dp)
         )
         
-        // 百分比
+        // 百分比 - 固定宽度，右对齐
         Text(
             text = "${String.format("%.1f", percentage)}%",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(52.dp)
         )
         
-        // 金额
+        // 金额 - 固定宽度，右对齐
         Text(
             text = "¥${String.format("%.0f", cost)}",
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(64.dp)
         )
     }
 }

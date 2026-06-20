@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -52,18 +53,18 @@ fun ItemListCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 图片
+            // 图片 - 增大尺寸
             ItemImage(
                 imagePath = itemWithDetails.item.imagePath,
-                size = 56
+                size = 72
             )
             
             // 信息区域
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -113,15 +114,52 @@ fun ItemListCard(
                     )
                 }
                 
-                // 日均价格
+                // 日均成本和已购买天数 - 独立一行显示
                 val holdingDays = itemWithDetails.item.getHoldingDays()
-                if (holdingDays > 0) {
-                    val dailyPrice = itemWithDetails.item.calculateDailyPrice()
-                    Text(
-                        text = "日均 ¥${String.format("%.2f", dailyPrice)} · 持有${holdingDays}天",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                    )
+                val dailyPrice = itemWithDetails.item.calculateDailyPrice()
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // 已购买天数
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "${holdingDays}天",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // 日均成本
+                    if (holdingDays > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.TrendingDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "¥${String.format("%.2f", dailyPrice)}/天",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
                 
                 if (itemWithDetails.tags.isNotEmpty()) {
@@ -171,7 +209,7 @@ fun ItemGridCard(
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val dateFormat = remember { SimpleDateFormat("MM-dd", Locale.getDefault()) }
+    val dateFormat = remember { SimpleDateFormat("yy/MM/dd", Locale.getDefault()) }
     val itemStatus = remember { ItemStatus.valueOf(itemWithDetails.item.status) }
     
     GlassCard(

@@ -41,4 +41,16 @@ interface CategoryDao {
     /** 获取预设分类数量 */
     @Query("SELECT COUNT(*) FROM categories WHERE isPreset = 1")
     suspend fun getPresetCategoryCount(): Int
+    
+    /** 更新分类排序顺序 */
+    @Query("UPDATE categories SET sortOrder = :sortOrder WHERE id = :categoryId")
+    suspend fun updateSortOrder(categoryId: Long, sortOrder: Int)
+    
+    /** 批量更新分类排序顺序 */
+    @Transaction
+    suspend fun updateSortOrders(categories: List<Category>) {
+        categories.forEachIndexed { index, category ->
+            updateSortOrder(category.id, index)
+        }
+    }
 }

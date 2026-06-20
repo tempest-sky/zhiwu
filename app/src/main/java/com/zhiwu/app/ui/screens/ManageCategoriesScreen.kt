@@ -3,7 +3,7 @@ package com.zhiwu.app.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -56,56 +56,33 @@ fun ManageCategoriesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(categories) { category ->
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = getCategoryIcon(category.icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            if (category.isPreset) {
-                                Text(
-                                    text = "预设分类",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+            itemsIndexed(
+                items = categories,
+                key = { _, category -> category.id }
+            ) { index, category ->
+                CategoryItem(
+                    category = category,
+                    index = index,
+                    totalCount = categories.size,
+                    onMoveUp = {
+                        if (index > 0) {
+                            val newList = categories.toMutableList()
+                            val item = newList.removeAt(index)
+                            newList.add(index - 1, item)
+                            viewModel.updateCategorySortOrders(newList)
                         }
-                        
-                        if (!category.isPreset) {
-                            IconButton(
-                                onClick = { editingCategory = category }
-                            ) {
-                                Icon(Icons.Default.Edit, "编辑")
-                            }
-                            
-                            IconButton(
-                                onClick = { deletingCategory = category }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    "删除",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
+                    },
+                    onMoveDown = {
+                        if (index < categories.size - 1) {
+                            val newList = categories.toMutableList()
+                            val item = newList.removeAt(index)
+                            newList.add(index + 1, item)
+                            viewModel.updateCategorySortOrders(newList)
                         }
-                    }
-                }
+                    },
+                    onEdit = { editingCategory = category },
+                    onDelete = { deletingCategory = category }
+                )
             }
         }
     }
@@ -158,6 +135,93 @@ fun ManageCategoriesScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun CategoryItem(
+    category: Category,
+    index: Int,
+    totalCount: Int,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 排序按钮
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(
+                    onClick = onMoveUp,
+                    enabled = index > 0,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.KeyboardArrowUp,
+                        "上移",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = onMoveDown,
+                    enabled = index < totalCount - 1,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        "下移",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Icon(
+                imageVector = getCategoryIcon(category.icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = category.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                if (category.isPreset) {
+                    Text(
+                        text = "预设分类",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            if (!category.isPreset) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, "编辑")
+                }
+                
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        "删除",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
     }
 }
 

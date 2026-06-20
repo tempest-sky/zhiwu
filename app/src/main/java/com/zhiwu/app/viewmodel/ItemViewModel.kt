@@ -75,6 +75,9 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     val wishItems: StateFlow<List<WishItem>> = wishItemRepository.allWishItems
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     
+    val achievedWishItems: StateFlow<List<WishItem>> = wishItemRepository.achievedWishItems
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    
     val wishItemCount: StateFlow<Int> = wishItemRepository.wishItemCount
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
     
@@ -300,6 +303,12 @@ class ItemViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             categoryRepository.deleteCategory(category)
+        }
+    }
+    
+    fun updateCategorySortOrders(categories: List<Category>) {
+        viewModelScope.launch {
+            categoryRepository.updateSortOrders(categories)
         }
     }
     

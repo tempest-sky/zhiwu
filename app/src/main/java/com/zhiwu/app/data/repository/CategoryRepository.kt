@@ -37,4 +37,9 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         val category = categoryDao.getCategoryById(categoryId)
         return category?.isPreset ?: false
     }
+    
+    /** 更新分类排序顺序 */
+    suspend fun updateSortOrders(categories: List<Category>) {
+        categoryDao.updateSortOrders(categories)
+    }
 }

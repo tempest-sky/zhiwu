@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.zhiwu.app.data.entity.WishItem
 import com.zhiwu.app.ui.components.*
 import com.zhiwu.app.viewmodel.ItemViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * 心愿清单页面
@@ -26,7 +28,9 @@ fun WishListScreen(
     onNavigateToAddWish: () -> Unit
 ) {
     val wishItems by viewModel.wishItems.collectAsState()
+    val achievedWishItems by viewModel.achievedWishItems.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var showAchieved by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -38,6 +42,13 @@ fun WishListScreen(
                     }
                 },
                 actions = {
+                    // 切换已入手/未入手
+                    IconButton(onClick = { showAchieved = !showAchieved }) {
+                        Icon(
+                            imageVector = if (showAchieved) Icons.Default.FavoriteBorder else Icons.Default.CheckCircle,
+                            contentDescription = if (showAchieved) "查看心愿" else "查看已入手"
+                        )
+                    }
                     IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Default.Add, "添加心愿")
                     }
@@ -45,7 +56,9 @@ fun WishListScreen(
             )
         }
     ) { paddingValues ->
-        if (wishItems.isEmpty()) {
+        val currentItems = if (showAchieved) achievedWishItems else wishItems
+        
+        if (currentItems.isEmpty()) {
             // 空状态
             Box(
                 modifier = Modifier
@@ -58,18 +71,18 @@ fun WishListScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (showAchieved) Icons.Default.CheckCircle else Icons.Default.FavoriteBorder,
                         contentDescription = null,
                         modifier = Modifier.size(80.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "还没有心愿物品",
+                        text = if (showAchieved) "还没有已入手的物品" else "还没有心愿物品",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "点击右上角添加你想要的物品",
+                        text = if (showAchieved) "心愿物品入手后会显示在这里" else "点击右上角添加你想要的物品",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -81,12 +94,23 @@ fun WishListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // 标题
+                item {
+                    Text(
+                        text = if (showAchieved) "已入手 (${achievedWishItems.size})" else "心愿中 (${wishItems.size})",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                
                 items(
-                    items = wishItems,
+                    items = currentItems,
                     key = { it.id }
                 ) { wishItem ->
                     WishItemCard(
                         wishItem = wishItem,
+                        isAchieved = showAchieved,
                         onAchieve = { viewModel.markWishItemAsAchieved(wishItem.id) },
                         onDelete = { viewModel.deleteWishItem(wishItem) }
                     )
@@ -120,10 +144,12 @@ fun WishListScreen(
 @Composable
 fun WishItemCard(
     wishItem: WishItem,
+    isAchieved: Boolean = false,
     onAchieve: () -> Unit,
     onDelete: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val dateFormat = remember { SimpleDateFormat("yy/MM/dd", Locale.getDefault()) }
     
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -147,6 +173,13 @@ fun WishItemCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    if (isAchieved && wishItem.achievedDate != null) {
+                        Text(
+                            text = "入手时间: ${dateFormat.format(Date(wishItem.achievedDate))}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
                 
                 // 优先级显示
@@ -161,8 +194,8 @@ fun WishItemCard(
                 )
             }
             
-            // 冷静期状态
-            if (wishItem.cooldownUntil != null) {
+            // 冷静期状态（仅未入手显示）
+            if (!isAchieved && wishItem.cooldownUntil != null) {
                 val remainingDays = wishItem.getRemainingCooldownDays()
                 if (remainingDays > 0) {
                     Text(
@@ -191,17 +224,19 @@ fun WishItemCard(
                     Text("删除", color = MaterialTheme.colorScheme.error)
                 }
                 
-                Spacer(Modifier.width(8.dp))
-                
-                Button(
-                    onClick = onAchieve,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("已入手")
+                if (!isAchieved) {
+                    Spacer(Modifier.width(8.dp))
+                    
+                    Button(
+                        onClick = onAchieve,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("已入手")
+                    }
                 }
             }
         }
