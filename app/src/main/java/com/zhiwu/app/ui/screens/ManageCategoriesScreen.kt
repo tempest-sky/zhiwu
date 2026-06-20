@@ -1,7 +1,6 @@
 package com.zhiwu.app.ui.screens
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.zhiwu.app.data.entity.Category
 import com.zhiwu.app.ui.components.GlassCard
@@ -45,7 +43,7 @@ fun ManageCategoriesScreen(
     
     val listState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(
-        listState = listState,
+        lazyListState = listState,
         onMove = { from, to ->
             reorderedList = reorderedList.toMutableList().apply {
                 add(to.index, removeAt(from.index))
@@ -95,7 +93,9 @@ fun ManageCategoriesScreen(
                         isDragging = isDragging,
                         onEdit = { editingCategory = category },
                         onDelete = { deletingCategory = category },
-                        modifier = Modifier.detectReorderAfterLongPress(reorderableState)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .longPressDraggable(reorderableState)
                     )
                 }
             }
