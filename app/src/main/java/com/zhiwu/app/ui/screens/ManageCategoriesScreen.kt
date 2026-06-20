@@ -95,7 +95,6 @@ fun ManageCategoriesScreen(
                         onDelete = { deletingCategory = category },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .longPressDraggable(reorderableState)
                     )
                 }
             }
