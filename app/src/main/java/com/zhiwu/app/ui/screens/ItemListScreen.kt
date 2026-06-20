@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.BackHandler
 import com.zhiwu.app.data.entity.ItemStatus
 import com.zhiwu.app.data.entity.ItemWithDetails
 import com.zhiwu.app.ui.animation.AnimationTokens
@@ -56,6 +57,12 @@ fun ItemListScreen(
     var selectedItems by remember { mutableStateOf(setOf<Long>()) }
     var isSelectionMode by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    
+    // 处理返回键 - 退出选择模式而非退出应用
+    BackHandler(enabled = isSelectionMode) {
+        isSelectionMode = false
+        selectedItems = emptySet()
+    }
     
     // 监听数据加载完成
     LaunchedEffect(items) {

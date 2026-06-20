@@ -60,21 +60,22 @@ fun ItemListCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 选择模式下的复选框
+            // 选择模式下的复选框 - 固定宽度避免错位
             if (isSelectionMode) {
                 Checkbox(
                     checked = isSelected,
-                    onCheckedChange = { onClick() }
+                    onCheckedChange = { onClick() },
+                    modifier = Modifier.size(24.dp)
                 )
             }
             
-            // 图片 - 增大尺寸
+            // 图片
             ItemImage(
                 imagePath = itemWithDetails.item.imagePath,
-                size = 72
+                size = if (isSelectionMode) 56 else 72
             )
             
             // 信息区域
